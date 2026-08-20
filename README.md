@@ -1,6 +1,6 @@
 ## 概要
 
-本レポジトリは、Code-Driven データ分析ナイト #3 AIエージェント共有 における発表
+本リポジトリは、Code-Driven データ分析ナイト #3 AIエージェント共有（2026/8/12）における発表
 「Unity AI Gateway 経由で Cortex Agents を呼び出してみよう」のデモで使用したスクリプト一式です。
 
 Databricks の Unity AI Gateway から、Snowflake 上に構築した Cortex Agent を MCP 経由で呼び出します。
@@ -48,22 +48,28 @@ Agent が Analyst と Search を使い分ける様子を確認できるように
 
 ## 前提環境
 
-| | |
+| 環境 | 条件 |
 | --- | --- |
-| Snowflake | Cortex Agents / Analyst / Search、MCP Server が利用できるアカウント |
-| Databricks | Unity AI Gateway (Beta) と Managed MCP Servers プレビューが有効、Model Serving サポートリージョン |
+| Snowflake | Cortex Agents / Analyst / Search、MCP Server が利用できるアカウント。`ACCOUNTADMIN` 相当のロール |
+| Databricks | Unity AI Gateway (Beta) と Managed MCP Servers プレビューが有効、Model Serving サポートリージョンのワークスペース |
 
 Snowflake のトライアルアカウントでは Cortex AI が制限されるため、通常アカウントを推奨します。
 
-## 実行順
+## 実行手順
 
-1. `snowflake/setup.sql` を ⓪ から ⑧ まで順に実行する
-2. Snowsight の Agent playground で Agent 単体の動作を確認する
-3. `databricks/SETUP.md` に従って Databricks 側を構築する
-4. AI Playground から MCP Service を呼び出す
+1. `snowflake/setup.sql` の冒頭のプレースホルダーを自分の環境の値に置き換える
+2. `snowflake/setup.sql` を ⓪ から ⑧ まで順に実行する（⓪ でウェアハウス・データベース・スキーマも作成されます）
+3. ④-1 のコメントに沿って、Snowsight の Agent playground で Agent 単体の動作を確認する
+4. ⑦ で作成したデモ用ユーザーで一度 Snowsight にログインし、初期パスワードを変更する
+5. ⑧ の出力から client_id / client_secret とエンドポイントを控える
+6. `databricks/SETUP.md` に従って Databricks 側を構築する
+7. AI Playground から MCP Service を呼び出す
+
+片付けは Databricks 側（MCP Service → HTTP Connection）を先に削除してから、`snowflake/teardown.sql` を実行します。
 
 ## 注意
 
-- スクリプト内のアカウント URL、パスワード、メールアドレス、クライアントシークレットはすべてマスクまたはプレースホルダーにしています。実行時はご自身の環境の値に置き換えてください。
+- スクリプト中の `<SF_HOST>` / `<DBX_HOST>` / `<EMAIL>` / `<INITIAL_PASSWORD>`、および `<catalog>.<schema>` はプレースホルダーです。実行時はご自身の環境の値に置き換えてください。client_id / client_secret はスクリプトに書き戻さず、Databricks の Connection にのみ設定してください。
+- ウェアハウス名 `cddn_demo_wh` とデータベース名 `cddn_demo_db` は既存環境に合わせて変更できます。変更する場合は `snowflake/` の2ファイルと `databricks/SETUP.md` を揃えてください。
 - `CREATE OR REPLACE AGENT` / `CREATE OR REPLACE MCP SERVER` を実行すると既存の GRANT が消えます。作り直した場合は `setup.sql` の ⑥ を必ず再実行してください。
-- 本レポジトリは特定製品の優劣を示すものではありません。
+- 本リポジトリは特定製品の優劣を示すものではありません。
